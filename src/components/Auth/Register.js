@@ -3,6 +3,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import { Link, withRouter } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { registerUser } from '../../actions/AuthActions';
 
 const styles = {
   textField: {
@@ -23,11 +27,19 @@ class Register extends Component {
       email: '',
       username: '',
       password: '',
-      password2: ''
+      password2: '',
+      errors: {}
+    
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
   }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.errors) {
+      this.setState({ errors: nextProps.errors });
+    };
+  };
 
   handleChange (event) {
     this.setState({ [event.target.name]: event.target.value })
@@ -41,11 +53,12 @@ class Register extends Component {
       password: this.state.password,
       password2: this.state.password2
     }
-    console.log(userData);
+    this.props.registerUser(userData, this.props.history);
   }
   
   render() {
     const { classes } = this.props;
+    const { errors } = this.state;
     return (     
       <Paper style={{ padding: 20 }}>
         <form onSubmit={this.handleSubmit}>
@@ -56,6 +69,8 @@ class Register extends Component {
             name="email"
             value={this.state.email}
             onChange={this.handleChange}
+            helperText={errors ? errors.email : ''}
+            error={errors.email}
           />
           <TextField
             type="text" 
@@ -64,6 +79,8 @@ class Register extends Component {
             name="username"
             value={this.state.username}
             onChange={this.handleChange}
+            helperText={errors ? errors.username : ''}
+            error={errors.username}
           />
           <TextField
             type="password" 
@@ -72,6 +89,8 @@ class Register extends Component {
             name="password"
             value={this.state.password}
             onChange={this.handleChange}
+            helperText={errors ? errors.password : ''}
+            error={errors.password}
           />
           <TextField
             type="password" 
@@ -80,6 +99,8 @@ class Register extends Component {
             name="password2"
             value={this.state.password2}
             onChange={this.handleChange}
+            helperText={errors ? errors.password2 : ''}
+            error={errors.password2}
           />
           <div className ={classes.button}>
             <Button variant="outlined" type="submit">
@@ -88,9 +109,17 @@ class Register extends Component {
           </div>
         </form>
       </Paper>
+    );
+  };
+};
 
-    )
-  }
+Register.propTypes = {
+  registerUser: PropTypes.func.isRequired,
+  errors: PropTypes.object.isRequired
 }
 
-export default withStyles(styles)(Register);
+const mapStateToProps = (state) => ({
+  errors: state.errors
+});
+
+export default connect(mapStateToProps, { registerUser })(withRouter(withStyles(styles)(Register)));
